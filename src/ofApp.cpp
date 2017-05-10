@@ -13,13 +13,24 @@ void ofApp::setup(){
 	outChan = 0;
 	sampleRate = SR;
 
-    int midiMin = 21;
-    int midiMax = 108;
+    midiMin = 55;
+    midiMax = 83;
     
     filterBank.setup(bufferSize, midiMin, midiMax, inChan, BANDWITH, sampleRate, 1.0);
     filterBank.setColor(ofColor::orange);
 
-	soundStream.setup(this, outChan, inChan, sampleRate, bufferSize, ticksPerBuffer);	}
+    soundStream.setup(this, outChan, inChan, sampleRate, bufferSize, ticksPerBuffer);
+    rpm = 0;
+
+    left.assign(bufferSize, 0.0);
+    right.assign(bufferSize, 0.0);
+    volHistory.assign(400, 0.0);
+
+    bufferCounter	= 0;
+
+    engine.setup();
+
+}
 
 //--------------------------------------------------------------
 
@@ -31,62 +42,36 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 
-	ofSetColor(225);
-	ofNoFill();
-	
-    float chSz = bufferSize/3;
-	// draw the left input channel:
-	{
-        ofPushStyle();
-        ofPushMatrix();
-        ofTranslate(100, 15, 0);
-        ofSetColor(225);
-        ofDrawBitmapString("Left Channel", 4, 18);
-        ofSetLineWidth(1);
-        ofRect(0, 0, chSz, 200);
-        ofSetColor(ofColor::orange);
-        ofSetLineWidth(3);
-        ofBeginShape();
-        for (int i = 0; i < bufferSize; i++){
-            ofVertex(i/(bufferSize/chSz), 100 - filterBank.getLeftBuffer()[i]*45);
-        }
-        ofEndShape(false);
-        ofPopMatrix();
-        ofPopStyle();
-	}
-	// draw the right input channel:
-	{
-        ofPushStyle();
-		ofPushMatrix();
-		ofTranslate(200+chSz, 15, 0);
-		ofSetColor(225);
-		ofDrawBitmapString("Right Channel", 4, 18);
-		ofSetLineWidth(1);
-		ofRect(0, 0, chSz, 200);
-		ofSetColor(ofColor::orange);
-		ofSetLineWidth(3);
-        ofBeginShape();
-        for (int i = 0; i < bufferSize; i++){
-            ofVertex(i/(bufferSize/chSz), 100 - filterBank.getRightBuffer()[i]*45);
-        }
-        ofEndShape(false);
-		ofPopMatrix();
-        ofPopStyle();
-	}
-    
-	//Draw FilterBank
-	{
-        ofPushStyle();
-        ofPushMatrix();
-        ofTranslate (100,250,0);
-            filterBank.draw(800,400);
-        ofPopMatrix();
-        ofPopStyle();
-	}
-	ofSetColor(225);
 
-	string reportString =  "Sampling Rate: "+ ofToString(SR) +"\nBuffer size: "+ ofToString(bufferSize);
-	ofDrawBitmapString(reportString, 10, 700);
+    ofBackground(0);
+
+    rpmTarget = 0;
+
+    if (curVol >= 0.02) rpmTarget = ofMap(filterBank.getFundamentalFrequency(), midiMin, midiMax, 0, -270);
+
+
+    engine.update(rpmTarget);
+
+    string texto = ofToString(filterBank.getFundamentalFrequency());
+    cout << texto << endl;
+
+    rpm = rpm + (rpmTarget - rpm) * 0.1;
+
+    // ofDrawBitmapString(texto, 20, 20);
+
+    //ofDrawRectangle(ofGetWidth() * 0.3, ofGetHeight() - rpm, ofGetWidth() * 0.4, rpm );
+
+    ofPushMatrix();
+    ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
+    ofSetColor(255);
+    ofNoFill();
+    ofDrawCircle(0, 0, 400);
+    ofRotate(rpm);
+    ofSetLineWidth(3);
+    ofDrawLine(0, 0, 300, 0);
+    ofSetLineWidth(1);
+    ofPopMatrix();
+
 
 
 }
@@ -96,6 +81,33 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels){
     
     //Analyze Input Buffer with ofxFilterbank
     filterBank.analyze(input);
+
+    curVol = 0.0;
+
+    // samples are "interleaved"
+    int numCounted = 0;
+
+    //lets go through each sample and calculate the root mean square which is a rough way to calculate volume
+    for (int i = 0; i < bufferSize; i++){
+        left[i]		= input[i*2]*0.5;
+        right[i]	= input[i*2+1]*0.5;
+
+        curVol += left[i] * left[i];
+        curVol += right[i] * right[i];
+        numCounted+=2;
+    }
+
+    //this is how we get the mean of rms :)
+    curVol /= (float)numCounted;
+
+    // this is how we get the root of rms :)
+    curVol = sqrt( curVol );
+
+//    smoothedVol *= 0.93;
+//    smoothedVol += 0.07 * curVol;
+
+    bufferCounter++;
+
     
 }
 

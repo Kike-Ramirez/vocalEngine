@@ -4,6 +4,7 @@
 
 #include "ofMain.h"
 #include "ofxFilterbank.h"
+#include "engine.h"
 
 #define BANDWITH  1.0
 #define BUFFER_SIZE 1024
@@ -39,8 +40,18 @@ class ofApp : public ofBaseApp{
 		int	sampleRate;
 		int bufferSize;
 		int inChan;
-		int outChan;    
+        int outChan;
+        float rpm;
+        int midiMin;
+        int midiMax;
 
+        vector <float> left;
+        vector <float> right;
+        vector <float> volHistory;
+        int 	bufferCounter;
+        float curVol;
+        float rpmTarget;
+        Engine engine;
 
 
 };
