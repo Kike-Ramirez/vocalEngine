@@ -13,16 +13,26 @@ public:
     int maxGear, minGear;
     int maxHistorySize;
     vector<float> gearRelation;
+    float maxRPMChange, minRPMChange;
+    bool gearChange;
     float rpm;
     float rpmTarget;
-    float deltaRPM;     // Threshold value to change gear
+    float deltaRPMUp, deltaRPMDown;     // Threshold value to change gear
     float timeGearChange, timerGearChange;
     float speed;
     float speedTarget;
     vector<float> rpmHistory;
 
+    // Visualization
+    ofVec2f centerA, centerB;
+    float radioA, radioB;
+    float longHandA, longHandB;
+    ofVec2f posIndicator, sizeIndicator;
+    ofTrueTypeFont fontIndicatorSmall, fontIndicatorMedium, fontIndicatorBig;
+
     void setup();
     void update(float rpm_);
+    void display();
     float getRMP();
     int getGear();
     float getSpeed();

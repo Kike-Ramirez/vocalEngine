@@ -45,33 +45,13 @@ void ofApp::draw(){
 
     ofBackground(0);
 
+    engine.display();
+
     rpmTarget = 0;
 
-    if (curVol >= 0.02) rpmTarget = ofMap(filterBank.getFundamentalFrequency(), midiMin, midiMax, 0, -270);
-
+    if (curVol >= 0.05) rpmTarget = ofMap(filterBank.getFundamentalFrequency(), midiMin, midiMax, 0, 12000);
 
     engine.update(rpmTarget);
-
-    string texto = ofToString(filterBank.getFundamentalFrequency());
-    cout << texto << endl;
-
-    rpm = rpm + (rpmTarget - rpm) * 0.1;
-
-    // ofDrawBitmapString(texto, 20, 20);
-
-    //ofDrawRectangle(ofGetWidth() * 0.3, ofGetHeight() - rpm, ofGetWidth() * 0.4, rpm );
-
-    ofPushMatrix();
-    ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
-    ofSetColor(255);
-    ofNoFill();
-    ofDrawCircle(0, 0, 400);
-    ofRotate(rpm);
-    ofSetLineWidth(3);
-    ofDrawLine(0, 0, 300, 0);
-    ofSetLineWidth(1);
-    ofPopMatrix();
-
 
 
 }
