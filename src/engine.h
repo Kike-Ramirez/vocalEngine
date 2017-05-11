@@ -17,7 +17,7 @@ public:
     bool gearChange;
     float rpm;
     float rpmTarget;
-    float deltaRPMUp, deltaRPMDown;     // Threshold value to change gear
+    float thresholdRPM;     // Threshold value to change gear
     float timeGearChange, timerGearChange;
     float speed;
     float speedTarget;

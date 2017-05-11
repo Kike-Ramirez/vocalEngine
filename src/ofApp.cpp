@@ -30,12 +30,25 @@ void ofApp::setup(){
 
     engine.setup();
 
+    videoPlayer.load("formulaOne.mp4");
+    videoPlayer.setLoopState(OF_LOOP_NORMAL);
+    videoPlayer.play();
+
 }
 
 //--------------------------------------------------------------
 
 void ofApp::update(){
 
+    rpmTarget = 0;
+
+    if (curVol >= 0.05) rpmTarget = ofMap(filterBank.getFundamentalFrequency(), midiMin, midiMax, 0, 12000);
+
+    engine.update(rpmTarget);
+
+    float videoSpeed = ofMap(engine.getRMP(), 0, 12000, 0, 1);
+
+    videoPlayer.update();
 
 }
 
@@ -43,15 +56,10 @@ void ofApp::update(){
 void ofApp::draw(){
 
 
-    ofBackground(0);
+    ofSetColor(255);
+    videoPlayer.draw(0,0);
 
     engine.display();
-
-    rpmTarget = 0;
-
-    if (curVol >= 0.05) rpmTarget = ofMap(filterBank.getFundamentalFrequency(), midiMin, midiMax, 0, 12000);
-
-    engine.update(rpmTarget);
 
 
 }
@@ -112,6 +120,7 @@ void ofApp::keyPressed  (int key){
 void ofApp::exit(){
     soundStream.stop();
     soundStream.close();
+    videoPlayer.close();
     filterBank.exit();
 }
 

@@ -53,6 +53,8 @@ class ofApp : public ofBaseApp{
         float rpmTarget;
         Engine engine;
 
+        ofVideoPlayer videoPlayer;
+
 
 };
 

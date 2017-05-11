@@ -17,11 +17,13 @@ void Engine::setup()
     speed = 0;
     speedTarget = 0;
     maxHistorySize = 20;
-    deltaRPMUp = 30;
-    deltaRPMDown = 18;
+    thresholdRPM = 1000;
     maxRPMChange = 6000;
     minRPMChange = 2000;
     gearChange = false;
+    timeGearChange = 0;
+    timerGearChange = 2000;
+
 
     gearRelation.push_back(60 / 10000);
     gearRelation.push_back(110 / 10000);
@@ -31,13 +33,13 @@ void Engine::setup()
     gearRelation.push_back(310 / 10000);
 
     // Visualization
-    centerA = ofVec3f(ofGetWidth() * 0.25, ofGetHeight() * 0.5);
-    centerB = ofVec3f(ofGetWidth() * 0.75, ofGetHeight() * 0.5);
-    radioA = ofGetWidth() * 0.2;
-    radioB = ofGetWidth() * 0.2;
+    centerA = ofVec3f(ofGetWidth() * 0.25, ofGetHeight() * 0.75);
+    centerB = ofVec3f(ofGetWidth() * 0.75, ofGetHeight() * 0.75);
+    radioA = ofGetWidth() * 0.12;
+    radioB = ofGetWidth() * 0.12;
     longHandA = radioA * 0.8;
     longHandB = radioB * 0.8;
-    posIndicator = ofVec3f(ofGetWidth() * 0.45, ofGetHeight() * 0.2);
+    posIndicator = ofVec3f(ofGetWidth() * 0.45, ofGetHeight() * 0.85);
     sizeIndicator = ofVec3f(ofGetWidth() * 0.1, ofGetHeight() * 0.1);
     fontIndicatorSmall.loadFont("American Captain Patrius 02 FRE.ttf", 10);
     fontIndicatorMedium.loadFont("digital-7.ttf", 48);
@@ -86,10 +88,11 @@ void Engine::update(float rpm_)
     if ((gearChange == false) && (avgPresent == 0) && (rpm > minRPMChange) && (rpm < maxRPMChange)) {
 
         gearChange = true;
+        timeGearChange = ofGetElapsedTimef();
 
     }
 
-    else if ((gearChange == true) && (avgPresent > 0) && (rpm > minRPMChange) && (rpm < maxRPMChange))
+    else if ((gearChange == true) && (avgPresent > 0) && (ofGetElapsedTimef() - timeGearChange < timerGearChange))
     {
 
         gearChange = false;
@@ -99,7 +102,7 @@ void Engine::update(float rpm_)
 
     if (avgPresent == 0) {
 
-        if ((rpm < 1000) && (gear > minGear)) {
+        if ((rpm < thresholdRPM) && (gear > minGear)) {
 
             rpm = 4000;
             gear--;
@@ -145,9 +148,9 @@ void Engine::display()
     ofFill();
     ofDrawCircle(ofVec3f(0,0), 1 * radioA);
     ofSetColor(255);
-    string textA = "RPM (x1000)";
+    string textA = "RPM";
     ofRectangle rectA = fontIndicatorSmall.getStringBoundingBox(textA, 0,0);
-    fontIndicatorSmall.drawString(textA, 0 - 0.5 * rectA.width, -0.6 * radioA + 0.5 * rectA.height);
+    fontIndicatorSmall.drawString(textA, 0 - 0.5 * rectA.width, -0.65 * radioA + 0.5 * rectA.height);
     ofRectangle rectDataA = fontIndicatorMedium.getStringBoundingBox(ofToString(int(rpm)), 0,0);
     fontIndicatorMedium.drawString(ofToString(int(rpm)), 0 - 0.5 * rectDataA.width, -0.4 * radioA + 0.5 * rectDataA.height);
     ofNoFill();
@@ -169,7 +172,7 @@ void Engine::display()
     ofSetColor(255);
     string textB = "kmph";
     ofRectangle rectB = fontIndicatorSmall.getStringBoundingBox(textB, 0,0);
-    fontIndicatorSmall.drawString(textB, 0 - 0.5 * rectB.width, -0.6 * radioB + 0.5 * rectB.height);
+    fontIndicatorSmall.drawString(textB, 0 - 0.5 * rectB.width, -0.65 * radioB + 0.5 * rectB.height);
     ofRectangle rectDataB = fontIndicatorMedium.getStringBoundingBox(ofToString(int(speed)), 0,0);
     fontIndicatorMedium.drawString(ofToString(int(speed)), 0 - 0.5 * rectDataB.width, -0.4 * radioB + 0.5 * rectDataB.height);
     ofNoFill();
@@ -208,7 +211,7 @@ void Engine::display()
         ofSetColor(255, 0, 0);
         string message = "Sube de Marcha";
         ofRectangle rectMessage = fontIndicatorBig.getStringBoundingBox(message, 0,0);
-        fontIndicatorBig.drawString(message, 0.5 * ofGetWidth() - 0.5 * rectMessage.width, 0.5 * ofGetHeight() + 0.5 * rectMessage.height);
+        fontIndicatorBig.drawString(message, 0.5 * ofGetWidth() - 0.5 * rectMessage.width, 0.4 * ofGetHeight() + 0.5 * rectMessage.height);
     }
 
 }
